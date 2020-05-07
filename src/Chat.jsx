@@ -1,19 +1,50 @@
 import React, { Component } from "react";
+import io from "socket.io-client";
+import { connect } from "react-redux";
+
+const socket = io.connect("http://localhost:4001");
 
 class Chat extends Component {
   constructor() {
     super();
     this.state = {
       chatOpen: false,
+      messageInput: "",
+      chat: [],
     };
   }
+
+  componentDidMount() {
+    console.log("Hello world");
+    socket.emit("chatMounted");
+    socket.on("chatResponse", (data) => {
+      console.log("frontend message", data);
+      this.setState({ chat: data });
+    });
+  }
+
+  // componentDidUpdate() {
+  //   socket.on("message", (chat) => {
+  //     console.log(chat);
+  //     this.setState({ chat: chat });
+  //   });
+  // }
 
   ToggleChat = () => {
     this.setState({ chatOpen: !this.state.chatOpen });
   };
 
-  submitChat = () => {
-    alert("Chat");
+  messageInputHandle = (evt) => {
+    this.setState({ messageInput: evt.target.value });
+  };
+
+  submitChat = (evt) => {
+    evt.preventDefault();
+    socket.emit("message", {
+      message: this.state.messageInput,
+      user: this.props.user,
+    });
+    this.setState({ messageInput: "" });
   };
 
   render = () => {
@@ -24,9 +55,21 @@ class Chat extends Component {
             <button onClick={this.ToggleChat} className="chat-button-open">
               Chat
             </button>
-            <div className="chat-messages-container"></div>
+            <div className="chat-messages-container">
+              {this.state.chat.map((message, idx) => {
+                return (
+                  <div key={idx}>
+                    {message.user}: {message.message}
+                  </div>
+                );
+              })}
+            </div>
             <form onSubmit={this.submitChat}>
-              <input type="text" />
+              <input
+                type="text"
+                value={this.state.messageInput}
+                onChange={this.messageInputHandle}
+              />
               <input type="submit" />
             </form>
           </div>
@@ -40,4 +83,10 @@ class Chat extends Component {
   };
 }
 
-export default Chat;
+let mapStateToProps = (state) => {
+  return {
+    user: state.user,
+  };
+};
+
+export default connect(mapStateToProps)(Chat);

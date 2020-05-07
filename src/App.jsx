@@ -61,11 +61,11 @@ class App extends Component {
   };
 }
 
-// let mapStateToProps = (state) => {
-//   return {
-//     user: state.user,
-//   };
-// };
+let mapStateToProps = (state) => {
+  return {
+    user: state.user,
+  };
+};
 
-// export default connect(mapStateToProps)(App);
-export default connect()(App);
+export default connect(mapStateToProps)(App);
+// export default connect()(App);

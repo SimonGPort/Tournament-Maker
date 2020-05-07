@@ -9,6 +9,7 @@ let reducer = (state, action) => {
   if (action.type === "logout") {
     return { ...state, user: undefined };
   }
+  return state;
 };
 
 const store = createStore(
