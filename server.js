@@ -17,6 +17,10 @@ const server = require("http").createServer(app);
 server.listen(4001);
 const io = require("socket.io")(server);
 
+const server2 = require("http").createServer(app);
+server2.listen(4002);
+const io2 = require("socket.io")(server2);
+
 ////websocket endpoints
 
 // io.sockets.on("connection", (socket) => {
@@ -24,8 +28,6 @@ const io = require("socket.io")(server);
 // });
 
 io.on("connection", (socket) => {
-  console.log("websocket connection");
-
   socket.on("chatMounted", () => {
     socket.emit("chatResponse", chat);
   });
@@ -34,16 +36,31 @@ io.on("connection", (socket) => {
     chat.push(data);
     socket.emit("chatResponse", chat);
   });
+});
 
-  // client.on("username", (username) => {
-  //   const user = {
-  //     name: username,
-  //     id: client.id,
-  //   };
-  //   users[client.id] = user;
-  //   io.emit("connected", user);
-  //   io.emit("users", Object.values(users));
-  // });
+io2.on("connection", (socket) => {
+  socket.on("yourID+name", (data) => {
+    let indexUsers = users.findIndex((user) => user.name === data.name);
+    users[indexUsers] = { name: data.name, id: data.id, room: 0 };
+    socket.emit("personInTheRoom", users);
+  });
+
+  socket.on("roomMounted", () => {
+    socket.emit("yourID", socket.id);
+  });
+
+  socket.on("callUser", (data) => {
+    io2
+      .to(data.userToCall)
+      .emit("callReceived", { signal: data.signalData, from: data.from });
+  });
+
+  socket.on("acceptCall", (data) => {
+    console.log("acceptCall data.to:", data.to);
+
+    console.log("acceptCall data:", data.to);
+    socket.to(data.to).emit("callAccepted", data.signal);
+  });
 });
 
 // Your endpoints go after this line

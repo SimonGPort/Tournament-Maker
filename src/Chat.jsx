@@ -15,7 +15,6 @@ class Chat extends Component {
   }
 
   componentDidMount() {
-    console.log("Hello world");
     socket.emit("chatMounted");
     socket.on("chatResponse", (data) => {
       console.log("frontend message", data);
