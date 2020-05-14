@@ -66,10 +66,12 @@ io2.on("connection", (socket) => {
 // Your endpoints go after this line
 app.post("/login", uploads.none(), async (req, res) => {
   let username = req.body.user;
-  if (users.find((user) => user.name === username)) {
-    res.send(JSON.stringify({ success: false }));
-    return;
-  }
+
+  //pour pas avoir le meme user connecte
+  // if (users.find((user) => user.name === username)) {
+  //   res.send(JSON.stringify({ success: false }));
+  //   return;
+  // }
   let user = { name: username };
   users.push(user);
   res.send(JSON.stringify({ success: true }));
