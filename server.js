@@ -59,7 +59,9 @@ io2.on("connection", (socket) => {
     console.log("acceptCall data.to:", data.to);
 
     console.log("acceptCall data:", data.to);
-    socket.to(data.to).emit("callAccepted", data.signal);
+    socket
+      .to(data.to)
+      .emit("callAccepted", { signal: data.signal, from: data.from });
   });
 });
 

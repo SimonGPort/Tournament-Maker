@@ -10,16 +10,18 @@ const socket = io.connect("http://localhost:4002");
 class Rooms extends React.Component {
   constructor() {
     super();
-    this.streamRef = React.createRef();
-    this.partnerVideoRef = React.createRef();
+    this.myVideosForThePeers = React.createRef();
+    this.myVideosForThePeers.current = [];
+    // this.peersVideos = React.createRef();
+    // this.peersVideos.current = [];
+    this.myStream = React.createRef();
     this.state = {
-      myStream: undefined,
-      peer: undefined,
-      peer2: undefined,
+      peersVideos: [],
     };
   }
 
   async componentDidMount() {
+    console.log("peersVideos", this.state.peersVideos);
     console.log("room mounted");
     socket.emit("roomMounted");
     socket.on("yourID", (id) => {
@@ -44,51 +46,123 @@ class Rooms extends React.Component {
         audio: false,
       })
       .then((stream) => {
-        this.setState({ myStream: stream });
-        this.streamRef.current = this.state.myStream;
-        // myStream = stream;
+        this.myStream.current = stream;
+
         console.log("render");
-        // let video = document.querySelector("video");
-        // video.srcObject = this.state.myStream;
-        // video.srcObject = this.streamRef.current;
         this.callPeer();
       });
 
     socket.on("callReceived", (data) => {
       console.log("callReceived", data);
       console.log("callReceived from:", data.from);
-      console.log("Peer2 before:", this.state.peer2);
-      if (this.state.peer2) {
+      console.log("new peer2");
+      let barrier = undefined;
+      barrier = this.state.peersVideos.find((peerVideo) => {
+        return peerVideo.from === data.from;
+      });
+      // barrier = this.peersVideos.current.find((peerVideo) => {
+      //   return peerVideo.from === data.from;
+      // });
+      if (barrier) {
         return;
       }
-      console.log("new peer2");
-      let peer2 = new Peer({
+      let peer = new Peer({
         initiator: false,
         trickle: false,
-        stream: this.streamRef.current,
-        // stream: myStream,
+        stream: this.myStream.current,
       });
-      this.setState({ peer2: peer2 });
-      console.log("peer2:", peer2);
-      // try {
-      peer2.signal(data.signal);
+      console.log("peer2:", peer);
+      peer.signal(data.signal);
 
-      peer2.on("stream", (stream) => {
-        console.log(this.state.myStream);
-        // console.log(myStream);
-        this.partnerVideoRef.current = stream;
+      peer.on("stream", (stream) => {
+        let newVideo = document.createElement("video");
+        let videoCollection = document.getElementById("videoCollection");
+        console.log("newVideo:", newVideo);
+        let newId = data.from + "";
+        console.log("newId:", newId);
+        newVideo.setAttribute("id", newId);
+        newVideo.srcObject = stream;
+        newVideo.setAttribute("autoPlay", true);
+        videoCollection.appendChild(newVideo);
+
+        console.log("STREAM:", stream);
+        console.log(this.myStream.current);
         console.log("inside of stream:", stream);
-        let video = document.querySelector("video");
-        video.srcObject = this.partnerVideoRef.current;
+        let newPeersVideos = this.state.peersVideos;
+        newPeersVideos.push({
+          stream,
+          from: data.from,
+        });
+        this.setState({
+          peersVideos: newPeersVideos,
+        });
+        console.log("peervideos:", this.state.peersVideos);
+        // this.peersVideos.current.push({ stream, from: data.from });
+        // let video = document.querySelector("video");
+        // video.srcObject = stream;
         // audio.srcObject = stream;
       });
-      // } catch (err) {
-      //   console.log("error receiver:", err);
-      // }
       let to = data.from;
-      peer2.on("signal", (data) => {
-        socket.emit("acceptCall", { to: to, signal: data });
+      peer.on("signal", (data) => {
+        socket.emit("acceptCall", {
+          to: to,
+          signal: data,
+          from: this.props.myID,
+        });
       });
+    });
+
+    socket.on("callAccepted", (data) => {
+      let barrier = undefined;
+      barrier = this.state.peersVideos.find((peerVideo) => {
+        return peerVideo.from === data.from;
+      });
+
+      // barrier = this.peersVideos.current.find((peerVideo) => {
+      //   return peerVideo.from === data.from;
+      // });
+      if (barrier) {
+        return;
+      }
+
+      console.log("callAccepted yay");
+      let peerObject = this.myVideosForThePeers.current.find((peerObject) => {
+        return peerObject.forThePeerId === data.from;
+      });
+      let peer = peerObject.peer;
+      console.log("data.signal in callAccepted:", data.signal);
+      peer.signal(data.signal);
+      console.log("callAccepted before-stream");
+      peer.on("stream", (stream) => {
+        let newVideo = document.createElement("video");
+        let videoCollection = document.getElementById("videoCollection");
+        console.log("newVideo:", newVideo);
+        let newId = data.from + "";
+        console.log("newId:", newId);
+        newVideo.setAttribute("id", newId);
+        newVideo.srcObject = stream;
+        newVideo.setAttribute("autoPlay", true);
+        videoCollection.appendChild(newVideo);
+
+        console.log(this.myStream.current);
+        // console.log(myStream);
+        console.log("inside of stream3 caller:", stream);
+        let newPeersVideos = this.state.peersVideos;
+        newPeersVideos.push({
+          stream,
+          from: data.from,
+        });
+        this.setState({
+          peersVideos: newPeersVideos,
+        });
+        console.log("peervideos:", this.state.peersVideos);
+        // this.peersVideos.current.push({ stream, from: data.from });
+        // let video = document.querySelector("video");
+        // video.srcObject = stream;
+        // audio.srcObject = stream;
+      });
+
+      console.log("finish for the caller", data);
     });
   }
 
@@ -99,12 +173,12 @@ class Rooms extends React.Component {
         return;
       }
       console.log("after person");
-      const peer = new Peer({
+      let peer = new Peer({
         initiator: true,
         trickle: false,
-        stream: this.streamRef.current,
-        // stream:myStream
+        stream: this.myStream.current,
       });
+      console.log("peer in callPeer:", person.id, "+", peer);
       console.log("before signal");
       peer.on("signal", (data) => {
         socket.emit("callUser", {
@@ -113,34 +187,26 @@ class Rooms extends React.Component {
           from: this.props.myID,
         });
       });
-
-      socket.on("callAccepted", (data) => {
-        console.log("callAccepted yay");
-        // try {
-        peer.signal(data);
-        peer.on("stream", (stream) => {
-          console.log(this.state.myStream);
-          // console.log(myStream);
-          console.log("inside of stream3 caller:", stream);
-          // this.partnerVideoRef.current = stream;
-          let video = document.querySelector("video");
-          // video.srcObject = this.partnerVideoRef.current;
-          video.srcObject = stream;
-          // audio.srcObject = stream;
-        });
-        // } catch (err) {
-        //   console.log("error caller:", err);
-        // }
-        console.log("finish for the caller", data);
-      });
+      this.myVideosForThePeers.current.push({ peer, forThePeerId: person.id });
     });
   };
 
   render = () => {
+    // if (this.props.personInTheRoom === undefined) {
+    //   return <div>Loading ...</div>;
+    // }
     return (
       <div>
         Room 0{/* <audio autoPlay /> */}
-        <video autoPlay />
+        <video autoPlay id={"myVideo"} />
+        <div id={"videoCollection"}></div>
+        {/* {this.state.peersVideos.map((peer) => {
+          // let stream = JSON.parse(peer.stream);
+          return (
+            <>
+              <video key={peer.from} src={peer.stream} />
+            </> */}
+        {/* ); })} */}
       </div>
     );
   };
