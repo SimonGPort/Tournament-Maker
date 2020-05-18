@@ -21,11 +21,8 @@ class Rooms extends React.Component {
   }
 
   async componentDidMount() {
-    console.log("peersVideos", this.state.peersVideos);
-    console.log("room mounted");
     socket.emit("roomMounted");
     socket.on("yourID", (id) => {
-      console.log("yourID", id);
       socket.emit("yourID+name", { id: id, name: this.props.user });
       this.props.dispatch({
         type: "myID",
@@ -34,6 +31,7 @@ class Rooms extends React.Component {
     });
 
     socket.on("personInTheRoom", (users) => {
+      console.log("personInTheRoom");
       this.props.dispatch({
         type: "personInTheRoom",
         personInTheRoom: users,
@@ -47,15 +45,12 @@ class Rooms extends React.Component {
       })
       .then((stream) => {
         this.myStream.current = stream;
-
-        console.log("render");
+        console.log("stream promise finish");
         this.callPeer();
       });
 
     socket.on("callReceived", (data) => {
-      console.log("callReceived", data);
-      console.log("callReceived from:", data.from);
-      console.log("new peer2");
+      console.log("callReceived");
       let barrier = undefined;
       barrier = this.state.peersVideos.find((peerVideo) => {
         return peerVideo.from === data.from;
@@ -71,23 +66,16 @@ class Rooms extends React.Component {
         trickle: false,
         stream: this.myStream.current,
       });
-      console.log("peer2:", peer);
       peer.signal(data.signal);
 
       peer.on("stream", (stream) => {
         let newVideo = document.createElement("video");
         let videoCollection = document.getElementById("videoCollection");
-        console.log("newVideo:", newVideo);
         let newId = data.from + "";
-        console.log("newId:", newId);
         newVideo.setAttribute("id", newId);
         newVideo.srcObject = stream;
         newVideo.setAttribute("autoPlay", true);
         videoCollection.appendChild(newVideo);
-
-        console.log("STREAM:", stream);
-        console.log(this.myStream.current);
-        console.log("inside of stream:", stream);
         let newPeersVideos = this.state.peersVideos;
         newPeersVideos.push({
           stream,
@@ -96,7 +84,6 @@ class Rooms extends React.Component {
         this.setState({
           peersVideos: newPeersVideos,
         });
-        console.log("peervideos:", this.state.peersVideos);
         // this.peersVideos.current.push({ stream, from: data.from });
         // let video = document.querySelector("video");
         // video.srcObject = stream;
@@ -113,40 +100,30 @@ class Rooms extends React.Component {
     });
 
     socket.on("callAccepted", (data) => {
-      let barrier = undefined;
-      barrier = this.state.peersVideos.find((peerVideo) => {
-        return peerVideo.from === data.from;
-      });
-
-      // barrier = this.peersVideos.current.find((peerVideo) => {
-      //   return peerVideo.from === data.from;
-      // });
-      if (barrier) {
-        return;
-      }
-
-      console.log("callAccepted yay");
       let peerObject = this.myVideosForThePeers.current.find((peerObject) => {
         return peerObject.forThePeerId === data.from;
       });
       let peer = peerObject.peer;
-      console.log("data.signal in callAccepted:", data.signal);
       peer.signal(data.signal);
-      console.log("callAccepted before-stream");
       peer.on("stream", (stream) => {
+        let streamBarrier = undefined;
+        streamBarrier = this.state.peersVideos.find((peerVideo) => {
+          return peerVideo.from === data.from;
+        });
+
+        if (streamBarrier) {
+          return;
+        }
+
+        console.log("streaming callAccepted");
         let newVideo = document.createElement("video");
         let videoCollection = document.getElementById("videoCollection");
-        console.log("newVideo:", newVideo);
         let newId = data.from + "";
-        console.log("newId:", newId);
         newVideo.setAttribute("id", newId);
         newVideo.srcObject = stream;
         newVideo.setAttribute("autoPlay", true);
         videoCollection.appendChild(newVideo);
 
-        console.log(this.myStream.current);
-        // console.log(myStream);
-        console.log("inside of stream3 caller:", stream);
         let newPeersVideos = this.state.peersVideos;
         newPeersVideos.push({
           stream,
@@ -155,14 +132,11 @@ class Rooms extends React.Component {
         this.setState({
           peersVideos: newPeersVideos,
         });
-        console.log("peervideos:", this.state.peersVideos);
         // this.peersVideos.current.push({ stream, from: data.from });
         // let video = document.querySelector("video");
         // video.srcObject = stream;
         // audio.srcObject = stream;
       });
-
-      console.log("finish for the caller", data);
     });
   }
 
@@ -172,14 +146,11 @@ class Rooms extends React.Component {
       if (person.name === this.props.user) {
         return;
       }
-      console.log("after person");
       let peer = new Peer({
         initiator: true,
         trickle: false,
         stream: this.myStream.current,
       });
-      console.log("peer in callPeer:", person.id, "+", peer);
-      console.log("before signal");
       peer.on("signal", (data) => {
         socket.emit("callUser", {
           userToCall: person.id,
