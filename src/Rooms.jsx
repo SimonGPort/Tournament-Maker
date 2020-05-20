@@ -46,6 +46,9 @@ class Rooms extends React.Component {
       .then((stream) => {
         this.myStream.current = stream;
         console.log("stream promise finish");
+        //je travail ici
+        let myVideo = document.getElementById("myVideo");
+        myVideo.srcObject = stream;
         this.callPeer();
       });
 
@@ -75,6 +78,10 @@ class Rooms extends React.Component {
         newVideo.setAttribute("id", newId);
         newVideo.srcObject = stream;
         newVideo.setAttribute("autoPlay", true);
+        newVideo.setAttribute("controls", true);
+        // newVideo.setAttribute("children", {
+        //   controlBar: { children: { fullscreenToggle: false } },
+        // });
         videoCollection.appendChild(newVideo);
         let newPeersVideos = this.state.peersVideos;
         newPeersVideos.push({
@@ -122,6 +129,7 @@ class Rooms extends React.Component {
         newVideo.setAttribute("id", newId);
         newVideo.srcObject = stream;
         newVideo.setAttribute("autoPlay", true);
+        newVideo.setAttribute("controls", true);
         videoCollection.appendChild(newVideo);
 
         let newPeersVideos = this.state.peersVideos;
@@ -169,7 +177,7 @@ class Rooms extends React.Component {
     return (
       <div>
         Room 0{/* <audio autoPlay /> */}
-        <video autoPlay id={"myVideo"} />
+        <video autoPlay controls id={"myVideo"} />
         <div id={"videoCollection"}></div>
         {/* {this.state.peersVideos.map((peer) => {
           // let stream = JSON.parse(peer.stream);
