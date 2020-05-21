@@ -42,3 +42,23 @@ body {
   width: 500px;
   height: 500px;
 }
+.fullscreen {
+  background-color: white;
+  border-radius: 25px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+.video-container {
+  width: 640px;
+  height: 480px;
+  position: relative;
+}
+.myVideo {
+  width: 640px;
+  height: 480px;
+}
+.chat-container {
+  position: sticky;
+  bottom: 0;
+}

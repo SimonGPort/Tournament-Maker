@@ -8,6 +8,17 @@ let reducer = (state, action) => {
   if (action.type === "myID") {
     return { ...state, myID: action.myID };
   }
+
+  if (action.type === "shareToggle") {
+    let action = undefined;
+    if (state.share === "camera") {
+      action = "computer";
+    } else {
+      action = "camera";
+    }
+    return { ...state, share: action };
+  }
+
   if (action.type === "personInTheRoom") {
     return { ...state, personInTheRoom: action.personInTheRoom };
   }
@@ -23,6 +34,7 @@ const store = createStore(
     user: undefined,
     myID: undefined,
     personInTheRoom: undefined,
+    share: "camera",
   },
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );

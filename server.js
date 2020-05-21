@@ -50,18 +50,25 @@ io2.on("connection", (socket) => {
   });
 
   socket.on("callUser", (data) => {
-    io2
-      .to(data.userToCall)
-      .emit("callReceived", { signal: data.signalData, from: data.from });
+    console.log("callUser", data.changeSignal, data.userToCall);
+    socket.to(data.userToCall).emit("callReceived", {
+      signal: data.signalData,
+      from: data.from,
+      changeSignal: data.changeSignal,
+      id: data.id,
+    });
   });
 
   socket.on("acceptCall", (data) => {
     console.log("acceptCall data.to:", data.to);
 
     console.log("acceptCall data:", data.to);
-    socket
-      .to(data.to)
-      .emit("callAccepted", { signal: data.signal, from: data.from });
+    socket.to(data.to).emit("callAccepted", {
+      signal: data.signal,
+      from: data.from,
+      changeSignal: data.changeSignal,
+      id: data.id,
+    });
   });
 });
 
@@ -85,7 +92,6 @@ app.post("/logout", uploads.none(), async (req, res) => {
     res.send(JSON.stringify({ success: false }));
     return;
   }
-  ///je travail ici
   users = users.filter((username) => {
     return username !== user;
   });

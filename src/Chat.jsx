@@ -48,7 +48,7 @@ class Chat extends Component {
 
   render = () => {
     return (
-      <div>
+      <div className="chat-container">
         {this.state.chatOpen === true ? (
           <div className="chat-container-open">
             <button onClick={this.ToggleChat} className="chat-button-open">
