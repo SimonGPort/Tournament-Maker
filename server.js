@@ -70,6 +70,22 @@ io2.on("connection", (socket) => {
       id: data.id,
     });
   });
+
+  socket.on("askContactToDestroyPeer-toServer", (data) => {
+    console.log("askContactToDestroyPeer-toServer");
+    socket.to(data.to).emit("askContactToDestroyPeer-toReceiver", {
+      to: data.to,
+      from: data.from,
+    });
+  });
+
+  socket.on("askContactToDestroyPeer-Return-toServer", (data) => {
+    console.log("askContactToDestroyPeer-Return-toServer");
+    socket.to(data.to).emit("askContactToDestroyPeer-Return-toCaller", {
+      to: data.to,
+      from: data.from,
+    });
+  });
 });
 
 // Your endpoints go after this line

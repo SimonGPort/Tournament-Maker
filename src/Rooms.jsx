@@ -13,9 +13,10 @@ class Rooms extends React.Component {
     this.myPeersInfo = React.createRef();
     this.myPeersInfo.current = [];
     this.myStream = React.createRef();
+    this.shareType = React.createRef();
+    this.shareType.current = "camera";
     this.state = {
       peersVideos: [],
-      shareType: "camera",
     };
   }
 
@@ -56,16 +57,19 @@ class Rooms extends React.Component {
       barrier = this.state.peersVideos.find((peerVideo) => {
         return peerVideo.from === data.from;
       });
-      if (barrier && !data.changeSignal) {
+      if (barrier) {
         return;
       }
 
-      if (data.changeSignal) {
-        this.myPeersInfo.current.filter((peerInfo) => {
-          return peerInfo.forThePeerId !== data.from;
-        });
-      }
+      // if (data.changeSignal) {
+      //   this.myPeersInfo.current.filter((peerInfo) => {
+      //     return peerInfo.forThePeerId !== data.from;
+      //   });
+      // }
       let idNumber = Math.floor(Math.random() * 1000000);
+      if (!data.from) {
+        return;
+      }
       let peer = new Peer({
         initiator: false,
         trickle: false,
@@ -80,6 +84,7 @@ class Rooms extends React.Component {
       peer = this.myPeersInfo.current.slice(-1).pop().peer;
       peer.signal(data.signal);
       peer.on("stream", (stream) => {
+        console.log("stream-CallReveicer");
         let newVideo = undefined;
         let newId = data.from + "";
         if (!data.changeSignal) {
@@ -87,6 +92,7 @@ class Rooms extends React.Component {
           let videoCollection = document.getElementById("videoCollection");
           videoCollection.appendChild(newVideo);
           newVideo.setAttribute("id", newId);
+          newVideo.setAttribute("class", "video");
           newVideo.setAttribute("autoPlay", true);
           newVideo.setAttribute("controls", true);
         } else {
@@ -131,7 +137,7 @@ class Rooms extends React.Component {
         return peerVideo.from === data.from;
       });
 
-      if (Barrier && !data.changeSignal) {
+      if (Barrier) {
         return;
       }
 
@@ -145,25 +151,32 @@ class Rooms extends React.Component {
       let peer = peerObject.peer;
       peer.signal(data.signal);
       peer.on("stream", (stream) => {
-        console.log("stream callAccepted");
+        console.log("stream-callAccepted");
         let streamBarrier = undefined;
         streamBarrier = this.state.peersVideos.find((peerVideo) => {
           return peerVideo.from === data.from;
         });
 
-        if (streamBarrier && !data.changeSignal) {
+        if (streamBarrier) {
           return;
         }
 
         console.log("streaming callAccepted");
-        let newVideo = document.createElement("video");
-        let videoCollection = document.getElementById("videoCollection");
+
+        let newVideo = undefined;
         let newId = data.from + "";
-        newVideo.setAttribute("id", newId);
+        if (!data.changeSignal) {
+          newVideo = document.createElement("video");
+          let videoCollection = document.getElementById("videoCollection");
+          videoCollection.appendChild(newVideo);
+          newVideo.setAttribute("id", newId);
+          newVideo.setAttribute("class", "video");
+          newVideo.setAttribute("autoPlay", true);
+          newVideo.setAttribute("controls", true);
+        } else {
+          newVideo = document.getElementById(newId);
+        }
         newVideo.srcObject = stream;
-        newVideo.setAttribute("autoPlay", true);
-        newVideo.setAttribute("controls", true);
-        videoCollection.appendChild(newVideo);
 
         let newPeersVideos = this.state.peersVideos;
         newPeersVideos.push({
@@ -179,19 +192,40 @@ class Rooms extends React.Component {
         // audio.srcObject = stream;
       });
     });
-  }
 
-  async componentDidUpdate() {
-    if (this.props.share !== this.state.shareType) {
-      console.log("change in share");
-      //je travail ici
-      let currentPeersInfo = this.myPeersInfo.current;
-      currentPeersInfo.forEach((peerObject) => {
-        peerObject.peer.destroy();
-        this.changePeerSignal(peerObject);
+    socket.on("askContactToDestroyPeer-toReceiver", (data) => {
+      this.myPeersInfo.current = this.myPeersInfo.current.filter((peer) => {
+        return peer.forThePeerId !== data.from;
+      });
+      let peersVideos = this.state.peersVideos.filter((video) => {
+        return video.from !== data.from;
+      });
+      this.setState({ peersVideos: peersVideos });
+
+      console.log("myPeersinfo:", this.myPeersInfo.current);
+      socket.emit("askContactToDestroyPeer-Return-toServer", {
+        to: data.from,
+        from: this.props.myID,
+      });
+    });
+
+    socket.on("askContactToDestroyPeer-Return-toCaller", (data) => {
+      let peerObjectToDestroy = this.myPeersInfo.current.find((peerObject) => {
+        return peerObject.forThePeerId === data.from;
       });
 
-      this.setState({ shareType: this.props.share });
+      peerObjectToDestroy.peer.destroy();
+
+      this.myPeersInfo.current = this.myPeersInfo.current.filter((peer) => {
+        return peer.forThePeerId !== data.from;
+      });
+
+      let peersVideos = this.state.peersVideos.filter((video) => {
+        return video.from !== data.from;
+      });
+      this.setState({ peersVideos: peersVideos });
+
+      this.shareType.current = this.props.share;
 
       if (this.props.share === "computer") {
         navigator.mediaDevices
@@ -204,6 +238,7 @@ class Rooms extends React.Component {
             console.log("stream promise finish");
             let myVideo = document.getElementById("myVideo");
             myVideo.srcObject = stream;
+            this.changePeerSignal(data.from);
           });
       } else {
         navigator.mediaDevices
@@ -216,8 +251,21 @@ class Rooms extends React.Component {
             console.log("stream promise finish");
             let myVideo = document.getElementById("myVideo");
             myVideo.srcObject = stream;
+            this.changePeerSignal(data.from);
           });
       }
+    });
+  }
+
+  async componentDidUpdate() {
+    if (this.props.share !== this.shareType.current) {
+      let currentPeersInfo = this.myPeersInfo.current;
+      currentPeersInfo.forEach((peerObject) => {
+        socket.emit("askContactToDestroyPeer-toServer", {
+          to: peerObject.forThePeerId,
+          from: this.props.myID,
+        });
+      });
     }
   }
 
@@ -228,7 +276,9 @@ class Rooms extends React.Component {
       if (person.name === this.props.user) {
         return;
       }
-
+      if (!person.id) {
+        return;
+      }
       let peer = new Peer({
         initiator: true,
         trickle: false,
@@ -252,14 +302,9 @@ class Rooms extends React.Component {
     });
   };
 
-  changePeerSignal = (peerObject) => {
-    if (!peerObject.forThePeerId) {
-      return;
-    }
-    this.myPeersInfo.current.filter((peerInfo) => {
-      return peerInfo.forThePeerId !== peerObject.forThePeerId;
-    });
+  changePeerSignal = (receiverId) => {
     let idNumber = Math.floor(Math.random() * 1000000);
+
     let peer = new Peer({
       initiator: true,
       trickle: false,
@@ -267,7 +312,7 @@ class Rooms extends React.Component {
     });
     this.myPeersInfo.current.push({
       peer,
-      forThePeerId: peerObject.forThePeerId,
+      forThePeerId: receiverId,
       id: idNumber,
     });
     peer = this.myPeersInfo.current.slice(-1).pop().peer;
@@ -275,7 +320,7 @@ class Rooms extends React.Component {
     peer.on("signal", (data) => {
       console.log("change signal");
       socket.emit("callUser", {
-        userToCall: peerObject.forThePeerId,
+        userToCall: receiverId,
         signalData: data,
         from: this.props.myID,
         changeSignal: true,
@@ -292,7 +337,7 @@ class Rooms extends React.Component {
         <img src="/Pictures/fullscreen.svg" className="control-button " />
         Room 0{/* <audio autoPlay /> */}
         <div className="video-container">
-          <video autoPlay controls id={"myVideo"} className="myVideo" />
+          <video autoPlay controls id={"myVideo"} className="video" />
           <div className="controls-video">
             <img src="/Pictures/fullscreen.svg" className="fullscreen" />
           </div>
