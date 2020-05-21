@@ -225,7 +225,13 @@ class Rooms extends React.Component {
       });
       this.setState({ peersVideos: peersVideos });
 
-      this.shareType.current = this.props.share;
+      this.changePeerSignal(data.from);
+    });
+  }
+
+  async componentDidUpdate() {
+    if (this.props.share !== this.shareType.current) {
+      let currentPeersInfo = this.myPeersInfo.current;
 
       if (this.props.share === "computer") {
         navigator.mediaDevices
@@ -238,7 +244,13 @@ class Rooms extends React.Component {
             console.log("stream promise finish");
             let myVideo = document.getElementById("myVideo");
             myVideo.srcObject = stream;
-            this.changePeerSignal(data.from);
+            currentPeersInfo.forEach((peerObject) => {
+              socket.emit("askContactToDestroyPeer-toServer", {
+                to: peerObject.forThePeerId,
+                from: this.props.myID,
+              });
+            });
+            this.shareType.current = this.props.share;
           });
       } else {
         navigator.mediaDevices
@@ -251,21 +263,15 @@ class Rooms extends React.Component {
             console.log("stream promise finish");
             let myVideo = document.getElementById("myVideo");
             myVideo.srcObject = stream;
-            this.changePeerSignal(data.from);
+            currentPeersInfo.forEach((peerObject) => {
+              socket.emit("askContactToDestroyPeer-toServer", {
+                to: peerObject.forThePeerId,
+                from: this.props.myID,
+              });
+            });
+            this.shareType.current = this.props.share;
           });
       }
-    });
-  }
-
-  async componentDidUpdate() {
-    if (this.props.share !== this.shareType.current) {
-      let currentPeersInfo = this.myPeersInfo.current;
-      currentPeersInfo.forEach((peerObject) => {
-        socket.emit("askContactToDestroyPeer-toServer", {
-          to: peerObject.forThePeerId,
-          from: this.props.myID,
-        });
-      });
     }
   }
 
