@@ -15,6 +15,8 @@ class Rooms extends React.Component {
     this.myStream = React.createRef();
     this.shareType = React.createRef();
     this.shareType.current = "camera";
+    this.shareAudio = React.createRef();
+    this.shareAudio.current = true;
     this.state = {
       peersVideos: [],
     };
@@ -41,7 +43,7 @@ class Rooms extends React.Component {
     navigator.mediaDevices
       .getUserMedia({
         video: true,
-        audio: false,
+        audio: this.props.audio,
       })
       .then((stream) => {
         this.myStream.current = stream;
@@ -144,9 +146,6 @@ class Rooms extends React.Component {
       let peerObject = this.myPeersInfo.current.find((peerObject) => {
         return peerObject.forThePeerId === data.from;
       });
-      // let peerObject = this.myPeersInfo.current.find((peerObject) => {
-      //   return peerObject.forThePeerId === data.id;
-      // });
 
       let peer = peerObject.peer;
       peer.signal(data.signal);
@@ -230,14 +229,17 @@ class Rooms extends React.Component {
   }
 
   async componentDidUpdate() {
-    if (this.props.share !== this.shareType.current) {
+    if (
+      this.props.share !== this.shareType.current ||
+      this.props.audio !== this.shareAudio.current
+    ) {
       let currentPeersInfo = this.myPeersInfo.current;
 
       if (this.props.share === "computer") {
         navigator.mediaDevices
           .getDisplayMedia({
             video: true,
-            audio: false,
+            audio: this.props.audio,
           })
           .then((stream) => {
             this.myStream.current = stream;
@@ -251,12 +253,13 @@ class Rooms extends React.Component {
               });
             });
             this.shareType.current = this.props.share;
+            this.shareAudio.current = this.props.audio;
           });
       } else {
         navigator.mediaDevices
           .getUserMedia({
             video: true,
-            audio: false,
+            audio: this.props.audio,
           })
           .then((stream) => {
             this.myStream.current = stream;
@@ -270,6 +273,7 @@ class Rooms extends React.Component {
               });
             });
             this.shareType.current = this.props.share;
+            this.shareAudio.current = this.props.audio;
           });
       }
     }
@@ -343,7 +347,7 @@ class Rooms extends React.Component {
         <img src="/Pictures/fullscreen.svg" className="control-button " />
         Room 0{/* <audio autoPlay /> */}
         <div className="video-container">
-          <video autoPlay controls id={"myVideo"} className="video" />
+          <video autoPlay controls muted id={"myVideo"} className="video" />
           <div className="controls-video">
             <img src="/Pictures/fullscreen.svg" className="fullscreen" />
           </div>
@@ -367,6 +371,7 @@ let mapStateToProps = (state) => {
     personInTheRoom: state.personInTheRoom,
     myID: state.myID,
     share: state.share,
+    audio: state.audio,
   };
 };
 

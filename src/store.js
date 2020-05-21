@@ -19,6 +19,10 @@ let reducer = (state, action) => {
     return { ...state, share: action };
   }
 
+  if (action.type === "audioToggle") {
+    return { ...state, audio: !state.audio };
+  }
+
   if (action.type === "personInTheRoom") {
     return { ...state, personInTheRoom: action.personInTheRoom };
   }
@@ -35,6 +39,7 @@ const store = createStore(
     myID: undefined,
     personInTheRoom: undefined,
     share: "camera",
+    audio: true,
   },
   window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
 );

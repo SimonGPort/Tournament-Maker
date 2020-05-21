@@ -8,6 +8,12 @@ class Navbar extends Component {
     });
   };
 
+  audioToggle = () => {
+    this.props.dispatch({
+      type: "audioToggle",
+    });
+  };
+
   render = () => {
     return (
       <div>
@@ -21,9 +27,15 @@ class Navbar extends Component {
             <img src="/Pictures/face.svg" />
           </button>
         )}
-        <button>
-          <img src="/Pictures/mic_off.svg" />
-        </button>
+        {this.props.audio === true ? (
+          <button onClick={this.audioToggle}>
+            <img src="/Pictures/mic_off.svg" />
+          </button>
+        ) : (
+          <button onClick={this.audioToggle}>
+            <img src="/Pictures/mic.svg" />
+          </button>
+        )}
       </div>
     );
   };
@@ -32,6 +44,7 @@ class Navbar extends Component {
 let mapStateToProps = (state) => {
   return {
     share: state.share,
+    audio: state.audio,
   };
 };
 
