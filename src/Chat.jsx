@@ -3,6 +3,8 @@ import io from "socket.io-client";
 import { connect } from "react-redux";
 
 const socket = io.connect("http://localhost:4001");
+let backgroundColor = false;
+let intervalPopUp = false;
 
 class Chat extends Component {
   constructor() {
@@ -11,6 +13,7 @@ class Chat extends Component {
       chatOpen: false,
       messageInput: "",
       chat: [],
+      messageToRead: false,
     };
   }
 
@@ -19,9 +22,10 @@ class Chat extends Component {
     socket.on("chatResponse", (data) => {
       console.log("hello world");
       console.log("frontend message", data);
-      if (!this.state.chatOpen) {
-        let audioMessenger = new Audio("/Sounds/messenger-sound.mp3.mp3");
+      if (!this.state.chatOpen && data.status === "messageReceived") {
+        let audioMessenger = new Audio("/Sounds/messenger-sound.mp3");
         audioMessenger.play();
+        this.setState({ messageToRead: true });
       }
 
       if (this.state.chatOpen) {
@@ -32,19 +36,49 @@ class Chat extends Component {
         chatMessagesContainer.scrollTop =
           chatMessagesContainer.scrollHeight + 18;
       }
-      this.setState({ chat: data });
+      this.setState({ chat: data.chat });
     });
   }
 
   componentDidUpdate() {
     if (this.state.chatOpen) {
+      if (this.state.messageToRead) {
+        intervalPopUp = false;
+
+        this.setState({ messageToRead: false });
+      }
       let chatMessagesContainer = document.getElementById(
         "chat-messages-container"
       );
       console.log(chatMessagesContainer.scrollHeight);
       chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight + 18;
     }
+
+    if (this.state.messageToRead && !intervalPopUp) {
+      intervalPopUp = true;
+      this.messagePopUp();
+    }
   }
+
+  messagePopUp = () => {
+    let chatButtonClosed = document.getElementById("chat-button-closed");
+    backgroundColor = !backgroundColor;
+    console.log("backgroundColor", backgroundColor);
+    if (chatButtonClosed) {
+      backgroundColor
+        ? (chatButtonClosed.style.backgroundColor = "blue")
+        : (chatButtonClosed.style.backgroundColor = "");
+    }
+
+    if (!this.state.messageToRead) {
+      backgroundColor = false;
+      if (chatButtonClosed) {
+        chatButtonClosed.style.backgroundColor = "";
+      }
+    } else if (this.state.messageToRead) {
+      setTimeout(this.messagePopUp, 1000);
+    }
+  };
 
   // componentDidUpdate() {
   //   socket.on("message", (chat) => {
@@ -100,7 +134,11 @@ class Chat extends Component {
             </form>
           </div>
         ) : (
-          <button onClick={this.ToggleChat} className="chat-button-closed">
+          <button
+            onClick={this.ToggleChat}
+            className="chat-button-closed"
+            id="chat-button-closed"
+          >
             Chat
           </button>
         )}

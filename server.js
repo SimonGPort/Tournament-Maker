@@ -29,12 +29,12 @@ const io2 = require("socket.io")(server2);
 
 io.on("connection", (socket) => {
   socket.on("chatMounted", () => {
-    socket.emit("chatResponse", chat);
+    socket.emit("chatResponse", { chat: chat, status: "connection" });
   });
 
   socket.on("message", (data) => {
     chat.push(data);
-    socket.emit("chatResponse", chat);
+    io.emit("chatResponse", { chat: chat, status: "messageReceived" });
   });
 });
 
