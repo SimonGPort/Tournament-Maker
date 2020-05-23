@@ -17,9 +17,33 @@ class Chat extends Component {
   componentDidMount() {
     socket.emit("chatMounted");
     socket.on("chatResponse", (data) => {
+      console.log("hello world");
       console.log("frontend message", data);
+      if (!this.state.chatOpen) {
+        let audioMessenger = new Audio("/Sounds/messenger-sound.mp3.mp3");
+        audioMessenger.play();
+      }
+
+      if (this.state.chatOpen) {
+        let chatMessagesContainer = document.getElementById(
+          "chat-messages-container"
+        );
+        console.log(chatMessagesContainer.scrollHeight);
+        chatMessagesContainer.scrollTop =
+          chatMessagesContainer.scrollHeight + 18;
+      }
       this.setState({ chat: data });
     });
+  }
+
+  componentDidUpdate() {
+    if (this.state.chatOpen) {
+      let chatMessagesContainer = document.getElementById(
+        "chat-messages-container"
+      );
+      console.log(chatMessagesContainer.scrollHeight);
+      chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight + 18;
+    }
   }
 
   // componentDidUpdate() {
@@ -54,7 +78,10 @@ class Chat extends Component {
             <button onClick={this.ToggleChat} className="chat-button-open">
               Chat
             </button>
-            <div className="chat-messages-container">
+            <div
+              className="chat-messages-container"
+              id="chat-messages-container"
+            >
               {this.state.chat.map((message, idx) => {
                 return (
                   <div key={idx}>

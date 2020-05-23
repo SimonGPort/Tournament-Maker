@@ -40,12 +40,24 @@ class UserAlert extends Component {
 
   render = () => {
     return (
-      <div>
-        <form onSubmit={this.submitHandler}>
-          <label>What is your name</label>
-          <input type="text" onChange={this.userName} />
-          <input type="submit" />
-        </form>
+      <div className="welcome-page">
+        <div className="welcome-card">
+          <div className="welcome-card-top">
+            <img src="/Pictures/LogoFinal.png" className="logo" />
+            <p>Welcome to </p>
+            <h3>Being Together</h3>
+          </div>
+          <form onSubmit={this.submitHandler} className="welcome-card-bottom">
+            <div>
+              <label>What is your name</label>
+            </div>
+            <div>
+              {" "}
+              <input type="text" onChange={this.userName} />
+              <input type="submit" />
+            </div>
+          </form>
+        </div>
       </div>
     );
   };

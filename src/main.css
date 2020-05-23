@@ -1,5 +1,5 @@
 body {
-  background-color: #bbb;
+  background-color: #f4f4f2;
   margin: 0;
 }
 
@@ -23,7 +23,7 @@ body {
 }
 .chat-button-closed {
   width: 500px;
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
 }
@@ -32,15 +32,16 @@ body {
 }
 .chat-container-open {
   width: 500px;
-  position: absolute;
   bottom: 0;
   right: 0;
+  position: fixed;
 }
 
 .chat-messages-container {
   background-color: white;
   width: 500px;
   height: 500px;
+  overflow: auto;
 }
 .fullscreen {
   background-color: white;
@@ -57,8 +58,67 @@ body {
 .video {
   width: 640px;
   height: 480px;
+  border: 2px solid black;
+  border-radius: 5px;
 }
 .chat-container {
-  position: sticky;
   bottom: 0;
+  position: sticky;
+}
+.logo {
+  width: 80px;
+  height: 80px;
+}
+.welcome-card {
+  border: 2px solid black;
+  border-radius: 5px;
+  background-color: #2d68cc;
+  padding: 10px;
+  position: absolute;
+}
+.welcome-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f4f2;
+  height: -webkit-fill-available;
+}
+.welcome-card-top {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.welcome-card-bottom {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 5px;
+}
+/* .fullPage {
+  height: 100%;
+} */
+
+.navBar-container-top {
+  display: flex;
+  align-items: center;
+}
+.navBar {
+  margin: 10px;
+  border: 2px solid black;
+  width: 160px;
+  border-radius: 5px;
+  background-color: #2d68cc;
+}
+.fullPage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f4f4f2;
+  height: -webkit-fill-available;
+}
+
+.fullPage-contrainer {
+  position: absolute;
+  width: 100%;
+  height: -webkit-fill-available;
 }

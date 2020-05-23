@@ -47,7 +47,6 @@ class Rooms extends React.Component {
       })
       .then((stream) => {
         this.myStream.current = stream;
-        console.log("stream promise finish");
         let myVideo = document.getElementById("myVideo");
         myVideo.srcObject = stream;
         this.callPeer();
@@ -243,7 +242,7 @@ class Rooms extends React.Component {
           })
           .then((stream) => {
             this.myStream.current = stream;
-            console.log("stream promise finish");
+
             let myVideo = document.getElementById("myVideo");
             myVideo.srcObject = stream;
             currentPeersInfo.forEach((peerObject) => {
@@ -263,7 +262,6 @@ class Rooms extends React.Component {
           })
           .then((stream) => {
             this.myStream.current = stream;
-            console.log("stream promise finish");
             let myVideo = document.getElementById("myVideo");
             myVideo.srcObject = stream;
             currentPeersInfo.forEach((peerObject) => {
@@ -344,8 +342,6 @@ class Rooms extends React.Component {
     // }
     return (
       <div>
-        <img src="/Pictures/fullscreen.svg" className="control-button " />
-        Room 0{/* <audio autoPlay /> */}
         <div className="video-container">
           <video autoPlay controls muted id={"myVideo"} className="video" />
           <div className="controls-video">

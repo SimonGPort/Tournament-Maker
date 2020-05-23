@@ -54,8 +54,12 @@ class App extends Component {
 
     return (
       <BrowserRouter>
-        <Navbar />
-        <Route path="/" exact={true} render={this.renderMainPage} />
+        <div className="fullPage">
+          <div className="fullPage-contrainer">
+            <Navbar />
+            <Route path="/" exact={true} render={this.renderMainPage} />
+          </div>
+        </div>
       </BrowserRouter>
     );
   };

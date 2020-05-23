@@ -16,8 +16,11 @@ class Navbar extends Component {
 
   render = () => {
     return (
-      <div>
-        Navbar
+      <div className="navBar">
+        <div className="navBar-container-top">
+          <img src="/Pictures/LogoFinal.png" className="logo" />
+          <h3>Being Together</h3>
+        </div>
         {this.props.share === "camera" ? (
           <button onClick={this.shareToggle}>
             <img src="/Pictures/screen_share.svg" />
