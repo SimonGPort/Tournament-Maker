@@ -40,10 +40,34 @@ io.on("connection", (socket) => {
 
 io2.on("connection", (socket) => {
   socket.on("yourID+name", (data) => {
-    let indexUsers = users.findIndex((user) => user.name === data.name);
-    users[indexUsers] = { name: data.name, id: data.id, room: 0 };
+    // let indexUsers = users.findIndex((user) => user.name === data.name);
+    let newUser = {
+      name: data.name,
+      id: data.id,
+      room: 0,
+      socketID: socket.id,
+    };
+    users.push(newUser);
     socket.emit("personInTheRoom", users);
   });
+
+  socket.on("disconnect", () => {
+    console.log("users", users);
+    users = users.filter((users) => {
+      return users.id !== socket.id;
+    });
+    console.log("users", users);
+    console.log("disconnect:", socket.id);
+
+    users.forEach((user) => {
+      socket.to(user.id).emit("disconnected", socket.id);
+    });
+  });
+
+  // socket.on(" Person-Disconnect", (data) => {
+  //   console.log("disconnect2:", socket.id, data);
+  //   // io.emit("disconnected", socket.id);
+  // });
 
   socket.on("roomMounted", () => {
     socket.emit("yourID", socket.id);
@@ -97,12 +121,13 @@ app.post("/login", uploads.none(), async (req, res) => {
   //   res.send(JSON.stringify({ success: false }));
   //   return;
   // }
-  let user = { name: username };
-  users.push(user);
+  // let user = { name: username };
+  // users.push(user);
   res.send(JSON.stringify({ success: true }));
 });
 
 app.post("/logout", uploads.none(), async (req, res) => {
+  console.log("logout");
   let user = req.body.user;
   if (!users.includes(user)) {
     res.send(JSON.stringify({ success: false }));

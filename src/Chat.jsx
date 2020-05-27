@@ -20,8 +20,6 @@ class Chat extends Component {
   componentDidMount() {
     socket.emit("chatMounted");
     socket.on("chatResponse", (data) => {
-      console.log("hello world");
-      console.log("frontend message", data);
       if (!this.state.chatOpen && data.status === "messageReceived") {
         let audioMessenger = new Audio("/Sounds/messenger-sound.mp3");
         audioMessenger.play();
@@ -32,7 +30,6 @@ class Chat extends Component {
         let chatMessagesContainer = document.getElementById(
           "chat-messages-container"
         );
-        console.log(chatMessagesContainer.scrollHeight);
         chatMessagesContainer.scrollTop =
           chatMessagesContainer.scrollHeight + 18;
       }
@@ -50,7 +47,6 @@ class Chat extends Component {
       let chatMessagesContainer = document.getElementById(
         "chat-messages-container"
       );
-      console.log(chatMessagesContainer.scrollHeight);
       chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight + 18;
     }
 
@@ -63,7 +59,6 @@ class Chat extends Component {
   messagePopUp = () => {
     let chatButtonClosed = document.getElementById("chat-button-closed");
     backgroundColor = !backgroundColor;
-    console.log("backgroundColor", backgroundColor);
     if (chatButtonClosed) {
       backgroundColor
         ? (chatButtonClosed.style.backgroundColor = "blue")
@@ -79,13 +74,6 @@ class Chat extends Component {
       setTimeout(this.messagePopUp, 1000);
     }
   };
-
-  // componentDidUpdate() {
-  //   socket.on("message", (chat) => {
-  //     console.log(chat);
-  //     this.setState({ chat: chat });
-  //   });
-  // }
 
   ToggleChat = () => {
     this.setState({ chatOpen: !this.state.chatOpen });
@@ -124,13 +112,14 @@ class Chat extends Component {
                 );
               })}
             </div>
-            <form onSubmit={this.submitChat}>
+            <form onSubmit={this.submitChat} className="input-chat-container">
               <input
                 type="text"
+                className="input-chat"
                 value={this.state.messageInput}
                 onChange={this.messageInputHandle}
               />
-              <input type="submit" />
+              <input type="submit" value="Send" />
             </form>
           </div>
         ) : (

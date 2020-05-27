@@ -22,6 +22,8 @@ body {
   background-color: white;
 }
 .chat-button-closed {
+  border: 1px solid black;
+  border-radius: 5px;
   width: 500px;
   position: fixed;
   bottom: 0;
@@ -29,6 +31,8 @@ body {
 }
 .chat-button-open {
   width: 500px;
+  border: 1px solid black;
+  border-radius: 5px;
 }
 .chat-container-open {
   width: 500px;
@@ -38,6 +42,8 @@ body {
 }
 
 .chat-messages-container {
+  border-left: 1px solid black;
+  border-right: 1px solid black;
   background-color: white;
   width: 500px;
   height: 500px;
@@ -52,15 +58,16 @@ body {
   right: 10px;
 }
 .video-container {
-  width: 640px;
-  height: 480px;
+  width: 533px;
+  height: 350px;
   position: relative;
 }
 .video {
-  width: 640px;
-  height: 480px;
+  width: 466px;
+  height: 350px;
   border: 2px solid black;
   border-radius: 5px;
+  margin-bottom: 10px;
 }
 .chat-container {
   bottom: 0;
@@ -122,4 +129,20 @@ body {
   position: absolute;
   width: 100%;
   height: -webkit-fill-available;
+}
+
+.input-chat-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+}
+.welcome-message {
+  margin-right: 15px;
+}
+#videoCollection {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  justify-content: space-around;
 }

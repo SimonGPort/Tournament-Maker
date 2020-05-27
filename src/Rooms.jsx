@@ -23,6 +23,37 @@ class Rooms extends React.Component {
   }
 
   async componentDidMount() {
+    socket.on("disconnected", (id) => {
+      console.log(
+        "disconnecter:",
+        id,
+        "+",
+        this.myPeersInfo.current,
+        this.state.peersVideos
+      );
+      //Detruire l'element HTML
+      let videoHtmlToDestroy = document.getElementById(id);
+      videoHtmlToDestroy.remove();
+      ///Detruire le peer
+      let peerObjectToDestroy = this.myPeersInfo.current.find((peerObject) => {
+        return peerObject.forThePeerId === id;
+      });
+      peerObjectToDestroy.peer.destroy();
+      this.myPeersInfo.current = this.myPeersInfo.current.filter(
+        (peerObject) => {
+          return peerObject.forThePeerId !== id;
+        }
+      );
+      console.log("this.myPeersInfo.current:", this.myPeersInfo.current);
+      //Detruire la reference du stream dans le localState
+      let peersVideos = this.state.peersVideos;
+      peersVideos = peersVideos.filter((peerVideo) => {
+        return peerVideo.from !== id;
+      });
+      this.setState({ peersVideos: peersVideos });
+      console.log("thisState.peersVideos:", this.state.peersVideos);
+    });
+
     socket.emit("roomMounted");
     socket.on("yourID", (id) => {
       socket.emit("yourID+name", { id: id, name: this.props.user });
@@ -62,11 +93,6 @@ class Rooms extends React.Component {
         return;
       }
 
-      // if (data.changeSignal) {
-      //   this.myPeersInfo.current.filter((peerInfo) => {
-      //     return peerInfo.forThePeerId !== data.from;
-      //   });
-      // }
       let idNumber = Math.floor(Math.random() * 1000000);
       if (!data.from) {
         return;
@@ -342,13 +368,15 @@ class Rooms extends React.Component {
     // }
     return (
       <div>
-        <div className="video-container">
-          <video autoPlay controls muted id={"myVideo"} className="video" />
-          <div className="controls-video">
+        {/* <div className="video-container"> */}
+
+        {/* <div className="controls-video">
             <img src="/Pictures/fullscreen.svg" className="fullscreen" />
-          </div>
+          </div> */}
+        {/* </div> */}
+        <div id={"videoCollection"}>
+          <video autoPlay controls muted id={"myVideo"} className="video" />
         </div>
-        <div id={"videoCollection"}></div>
         {/* {this.state.peersVideos.map((peer) => {
           // let stream = JSON.parse(peer.stream);
           return (

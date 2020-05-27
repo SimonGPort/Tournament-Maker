@@ -48,13 +48,13 @@ class UserAlert extends Component {
             <h3>Being Together</h3>
           </div>
           <form onSubmit={this.submitHandler} className="welcome-card-bottom">
-            <div>
+            <div className="welcome-message">
               <label>What is your name</label>
             </div>
             <div>
               {" "}
               <input type="text" onChange={this.userName} />
-              <input type="submit" />
+              <input type="submit" value="Enter" />
             </div>
           </form>
         </div>
