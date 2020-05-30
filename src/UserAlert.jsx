@@ -44,8 +44,9 @@ class UserAlert extends Component {
         <div className="welcome-card">
           <div className="welcome-card-top">
             <img src="/Pictures/LogoFinal.png" className="logo" />
-            <p>Welcome to </p>
-            <h3>Being Together</h3>
+            <p style={{ display: "flex", alignItems: "center" }}>
+              Welcome to <span className="h3">Being Together</span>
+            </p>
           </div>
           <form onSubmit={this.submitHandler} className="welcome-card-bottom">
             <div className="welcome-message">
