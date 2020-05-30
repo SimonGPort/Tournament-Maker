@@ -113,11 +113,15 @@ class Rooms extends React.Component {
       peer.on("stream", (stream) => {
         console.log("stream-CallReveicer");
         let newVideo = undefined;
-        let newId = data.from + "";
+        let newVideoContainer = undefined;
+        let newId = "video:" + data.from + "";
         if (!data.changeSignal) {
           newVideo = document.createElement("video");
+          newVideoContainer = document.createElement("div");
           let videoCollection = document.getElementById("videoCollection");
-          videoCollection.appendChild(newVideo);
+          videoCollection.appendChild(newVideoContainer);
+          newVideoContainer.appendChild(newVideo);
+          newVideoContainer.id = "videoContainer:" + data.from;
           newVideo.setAttribute("id", newId);
           newVideo.setAttribute("class", "video");
           newVideo.setAttribute("autoPlay", true);
@@ -188,15 +192,31 @@ class Rooms extends React.Component {
         console.log("streaming callAccepted");
 
         let newVideo = undefined;
-        let newId = data.from + "";
+        let newVideoContainer = undefined;
+        let newVideoControls = undefined;
+        let newId = "video:" + data.from + "";
         if (!data.changeSignal) {
           newVideo = document.createElement("video");
+          newVideoContainer = document.createElement("div");
+          newVideoControls = document.createElement("div");
           let videoCollection = document.getElementById("videoCollection");
-          videoCollection.appendChild(newVideo);
+          videoCollection.appendChild(newVideoContainer);
+          newVideoContainer.appendChild(newVideo);
+          newVideoContainer.appendChild(newVideoControls);
+          newVideoControls.id = "videoControls:" + data.from;
+          newVideoContainer.id = "videoContainer:" + data.from;
           newVideo.setAttribute("id", newId);
           newVideo.setAttribute("class", "video");
           newVideo.setAttribute("autoPlay", true);
           newVideo.setAttribute("controls", true);
+          ///videoControls
+          let buttonFullScreen = undefined;
+          buttonFullScreen = document.createElement("button");
+          newVideoControls.appendChild(buttonFullScreen);
+          buttonFullScreen.id = "videoControls-fullScreen:" + data.from;
+          buttonFullScreen.onclick = () => {
+            this.fullScreen(data.from);
+          };
         } else {
           newVideo = document.getElementById(newId);
         }
@@ -302,6 +322,17 @@ class Rooms extends React.Component {
       }
     }
   }
+
+  fullScreen = (id) => {
+    let videoContainer = undefined;
+    videoContainer = document.getElementById("video:" + id);
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      videoContainer.requestFullscreen();
+    }
+    console.log("hello world", id);
+  };
 
   callPeer = () => {
     let idNumber = Math.floor(Math.random() * 1000000);
