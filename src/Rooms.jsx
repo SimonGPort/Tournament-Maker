@@ -78,7 +78,7 @@ class Rooms extends React.Component {
       })
       .then((stream) => {
         this.myStream.current = stream;
-        let myVideo = document.getElementById("myVideo");
+        let myVideo = document.getElementById("video:Mine");
         myVideo.srcObject = stream;
         this.callPeer();
       });
@@ -289,7 +289,7 @@ class Rooms extends React.Component {
           .then((stream) => {
             this.myStream.current = stream;
 
-            let myVideo = document.getElementById("myVideo");
+            let myVideo = document.getElementById("video:Mine");
             myVideo.srcObject = stream;
             currentPeersInfo.forEach((peerObject) => {
               socket.emit("askContactToDestroyPeer-toServer", {
@@ -308,7 +308,7 @@ class Rooms extends React.Component {
           })
           .then((stream) => {
             this.myStream.current = stream;
-            let myVideo = document.getElementById("myVideo");
+            let myVideo = document.getElementById("video:Mine");
             myVideo.srcObject = stream;
             currentPeersInfo.forEach((peerObject) => {
               socket.emit("askContactToDestroyPeer-toServer", {
@@ -325,7 +325,9 @@ class Rooms extends React.Component {
 
   fullScreen = (id) => {
     let videoContainer = undefined;
-    videoContainer = document.getElementById("video:" + id);
+    let video = undefined;
+    videoContainer = document.getElementById("videoContainer:" + id);
+    video = document.getElementById("video:" + id);
     if (document.fullscreenElement) {
       document.exitFullscreen();
     } else {
@@ -394,27 +396,50 @@ class Rooms extends React.Component {
   };
 
   render = () => {
-    // if (this.props.personInTheRoom === undefined) {
-    //   return <div>Loading ...</div>;
-    // }
     return (
       <div>
-        {/* <div className="video-container"> */}
-
-        {/* <div className="controls-video">
-            <img src="/Pictures/fullscreen.svg" className="fullscreen" />
-          </div> */}
-        {/* </div> */}
         <div id={"videoCollection"}>
-          <video autoPlay controls muted id={"myVideo"} className="video" />
+          <div id="videoContainer:Mine" className="videoContrainer">
+            <video
+              autoPlay
+              controls
+              muted
+              id={"video:Mine"}
+              className="video"
+            />
+            <div id="videoControls:Mine" className="videoControls">
+              <div className="controls-left">
+                <div className="volume-controls">
+                  <button className="button-volume button"></button>
+                  <input
+                    className="volume"
+                    type="range"
+                    max="1"
+                    min="0"
+                    step="0.01"
+                  ></input>
+                </div>
+              </div>
+              <div className="controls-right">
+                <button className="button-PIP button">
+                  <img
+                    src="/Pictures/picture_in_picture.svg"
+                    className="img-button"
+                  />
+                </button>
+
+                <button
+                  className="button-fullscreen button"
+                  onClick={() => {
+                    this.fullScreen("Mine");
+                  }}
+                >
+                  <img src="/Pictures/fullscreen.svg" className="img-button" />
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-        {/* {this.state.peersVideos.map((peer) => {
-          // let stream = JSON.parse(peer.stream);
-          return (
-            <>
-              <video key={peer.from} src={peer.stream} />
-            </> */}
-        {/* ); })} */}
       </div>
     );
   };

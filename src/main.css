@@ -63,11 +63,10 @@ body {
   position: relative;
 }
 .video {
-  width: 466px;
-  height: 350px;
+  width: 100%;
+  height: 100%;
   border: 2px solid black;
   border-radius: 5px;
-  margin-bottom: 10px;
 }
 .chat-container {
   bottom: 0;
@@ -155,4 +154,36 @@ body {
   margin-inline-end: 0px;
   font-weight: bold;
   padding-left: 8px;
+}
+.videoContrainer {
+  width: 466px;
+  height: 350px;
+  position: relative;
+  margin-bottom: 10px;
+}
+.videoControls {
+  align-items: center;
+  justify-content: space-between;
+  display: flex;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.5)
+  );
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  padding: 20px;
+}
+
+.button {
+  border-radius: 5px;
+}
+.img-button {
+  width: 24px;
+  height: 24px;
+}
+.button-PIP {
+  margin-right: 10px;
 }
