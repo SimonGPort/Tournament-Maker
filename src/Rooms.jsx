@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import Peer from "simple-peer";
 import io from "socket.io-client";
+// require("./videoControls.js");
 
 const socket = io.connect("http://localhost:4002");
 
@@ -126,6 +127,8 @@ class Rooms extends React.Component {
           newVideo.setAttribute("class", "video");
           newVideo.setAttribute("autoPlay", true);
           newVideo.setAttribute("controls", true);
+          ///videoControls
+          // createVideoControls(data.from);
         } else {
           newVideo = document.getElementById(newId);
         }
@@ -210,6 +213,7 @@ class Rooms extends React.Component {
           newVideo.setAttribute("autoPlay", true);
           newVideo.setAttribute("controls", true);
           ///videoControls
+          // createVideoControls(data.from);
           let buttonFullScreen = undefined;
           buttonFullScreen = document.createElement("button");
           newVideoControls.appendChild(buttonFullScreen);
@@ -333,7 +337,35 @@ class Rooms extends React.Component {
     } else {
       videoContainer.requestFullscreen();
     }
-    console.log("hello world", id);
+  };
+
+  picture_in_picture = (id) => {
+    let videoContainer = undefined;
+    let video = undefined;
+    videoContainer = document.getElementById("videoContainer:" + id);
+    video = document.getElementById("video:" + id);
+    if (video !== document.pictureInPictureElement) {
+      video.requestPictureInPicture();
+    } else {
+      document.exitPictureInPicture();
+    }
+  };
+
+  updateVolume = (id, evt) => {
+    let video = document.getElementById("video:" + id);
+    video.volume = evt.target.value;
+  };
+
+  toggleMute = (id) => {
+    let video = document.getElementById("video:" + id);
+    let muteImage = document.getElementById("mute:" + id);
+    if (video.muted) {
+      video.muted = false;
+      muteImage.src = "/Pictures/volume_up.svg";
+    } else {
+      video.muted = true;
+      muteImage.src = "/Pictures/volume_off.svg";
+    }
   };
 
   callPeer = () => {
@@ -399,32 +431,37 @@ class Rooms extends React.Component {
     return (
       <div>
         <div id={"videoCollection"}>
-          <div id="videoContainer:Mine" className="videoContrainer">
-            <video
-              autoPlay
-              controls
-              muted
-              id={"video:Mine"}
-              className="video"
-            />
+          <div id="videoContainer:Mine" className="videoContainer">
+            <video autoPlay muted id={"video:Mine"} className="video" />
             <div id="videoControls:Mine" className="videoControls">
               <div className="controls-left">
-                <div className="volume-controls">
-                  <button className="button-volume button"></button>
-                  <input
-                    className="volume"
-                    type="range"
-                    max="1"
-                    min="0"
-                    step="0.01"
-                  ></input>
-                </div>
+                <button className="button-volume button">
+                  <img
+                    id="mute:Mine"
+                    src="/Pictures/volume_off.svg"
+                    className="img-button"
+                    onClick={() => {
+                      this.toggleMute("Mine");
+                    }}
+                  />
+                </button>
+                <input
+                  className="volume"
+                  type="range"
+                  max="1"
+                  min="0"
+                  step="0.01"
+                  onChange={(evt) => this.updateVolume("Mine", evt)}
+                ></input>
               </div>
               <div className="controls-right">
                 <button className="button-PIP button">
                   <img
                     src="/Pictures/picture_in_picture.svg"
                     className="img-button"
+                    onClick={() => {
+                      this.picture_in_picture("Mine");
+                    }}
                   />
                 </button>
 

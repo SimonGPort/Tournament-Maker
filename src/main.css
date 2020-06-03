@@ -155,7 +155,7 @@ body {
   font-weight: bold;
   padding-left: 8px;
 }
-.videoContrainer {
+.videoContainer {
   width: 466px;
   height: 350px;
   position: relative;
@@ -174,7 +174,7 @@ body {
   bottom: 0;
   right: 0;
   left: 0;
-  padding: 20px;
+  padding: 10px;
 }
 
 .button {
