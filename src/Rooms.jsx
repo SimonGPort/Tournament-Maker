@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import Peer from "simple-peer";
 import io from "socket.io-client";
-// require("./videoControls.js");
+import createVideoControls from "./videoControls.js";
 
 const socket = io.connect("http://localhost:4002");
 
@@ -18,6 +18,9 @@ class Rooms extends React.Component {
     this.shareType.current = "camera";
     this.shareAudio = React.createRef();
     this.shareAudio.current = true;
+    this.barrierReceived = React.createRef();
+    this.barrierReceived.current = false;
+
     this.state = {
       peersVideos: [],
     };
@@ -33,7 +36,7 @@ class Rooms extends React.Component {
         this.state.peersVideos
       );
       //Detruire l'element HTML
-      let videoHtmlToDestroy = document.getElementById(id);
+      let videoHtmlToDestroy = document.getElementById("videoContainer:" + id);
       videoHtmlToDestroy.remove();
       ///Detruire le peer
       let peerObjectToDestroy = this.myPeersInfo.current.find((peerObject) => {
@@ -85,7 +88,7 @@ class Rooms extends React.Component {
       });
 
     socket.on("callReceived", (data) => {
-      console.log("callReceived");
+      console.log("callReceived+id:", data.from, this.props.myID);
       let barrier = undefined;
       barrier = this.state.peersVideos.find((peerVideo) => {
         return peerVideo.from === data.from;
@@ -112,27 +115,45 @@ class Rooms extends React.Component {
       peer = this.myPeersInfo.current.slice(-1).pop().peer;
       peer.signal(data.signal);
       peer.on("stream", (stream) => {
+        if (this.barrierReceived.current) {
+          return;
+        }
+        this.barrierReceived.current = true;
+
         console.log("stream-CallReveicer");
         let newVideo = undefined;
         let newVideoContainer = undefined;
+        let newVideoControls = undefined;
+        //ici
         let newId = "video:" + data.from + "";
         if (!data.changeSignal) {
           newVideo = document.createElement("video");
           newVideoContainer = document.createElement("div");
+          newVideoControls = document.createElement("div");
           let videoCollection = document.getElementById("videoCollection");
           videoCollection.appendChild(newVideoContainer);
           newVideoContainer.appendChild(newVideo);
+          newVideoContainer.appendChild(newVideoControls);
+          newVideoControls.id = "videoControls:" + data.from;
           newVideoContainer.id = "videoContainer:" + data.from;
+          newVideoContainer.className = "videoContainer";
           newVideo.setAttribute("id", newId);
           newVideo.setAttribute("class", "video");
           newVideo.setAttribute("autoPlay", true);
-          newVideo.setAttribute("controls", true);
+          newVideo.srcObject = stream;
           ///videoControls
-          // createVideoControls(data.from);
+          console.log("callReceived createVideoControls");
+          createVideoControls(
+            data.from,
+            this.toggleMute,
+            this.updateVolume,
+            this.picture_in_picture,
+            this.fullScreen
+          );
         } else {
           newVideo = document.getElementById(newId);
+          newVideo.srcObject = stream;
         }
-        newVideo.srcObject = stream;
 
         let newPeersVideos = this.state.peersVideos;
         if (data.changeSignal) {
@@ -147,10 +168,7 @@ class Rooms extends React.Component {
         this.setState({
           peersVideos: newPeersVideos,
         });
-        // this.peersVideos.current.push({ stream, from: data.from });
-        // let video = document.querySelector("video");
-        // video.srcObject = stream;
-        // audio.srcObject = stream;
+        this.barrierReceived.current = false;
       });
       let to = data.from;
       peer.on("signal", (dataSignal) => {
@@ -197,6 +215,7 @@ class Rooms extends React.Component {
         let newVideo = undefined;
         let newVideoContainer = undefined;
         let newVideoControls = undefined;
+        //ici2
         let newId = "video:" + data.from + "";
         if (!data.changeSignal) {
           newVideo = document.createElement("video");
@@ -208,19 +227,27 @@ class Rooms extends React.Component {
           newVideoContainer.appendChild(newVideoControls);
           newVideoControls.id = "videoControls:" + data.from;
           newVideoContainer.id = "videoContainer:" + data.from;
+          newVideoContainer.className = "videoContainer";
           newVideo.setAttribute("id", newId);
           newVideo.setAttribute("class", "video");
           newVideo.setAttribute("autoPlay", true);
-          newVideo.setAttribute("controls", true);
           ///videoControls
-          // createVideoControls(data.from);
-          let buttonFullScreen = undefined;
-          buttonFullScreen = document.createElement("button");
-          newVideoControls.appendChild(buttonFullScreen);
-          buttonFullScreen.id = "videoControls-fullScreen:" + data.from;
-          buttonFullScreen.onclick = () => {
-            this.fullScreen(data.from);
-          };
+          console.log("callAccepted createVideoControls");
+          createVideoControls(
+            data.from,
+            this.toggleMute,
+            this.updateVolume,
+            this.picture_in_picture,
+            this.fullScreen
+          );
+
+          // let buttonFullScreen = undefined;
+          // buttonFullScreen = document.createElement("button");
+          // newVideoControls.appendChild(buttonFullScreen);
+          // buttonFullScreen.id = "videoControls-fullScreen:" + data.from;
+          // buttonFullScreen.onclick = () => {
+          //   this.fullScreen(data.from);
+          // };
         } else {
           newVideo = document.getElementById(newId);
         }
@@ -352,13 +379,18 @@ class Rooms extends React.Component {
   };
 
   updateVolume = (id, evt) => {
+    console.log("updateVolume:", id, evt);
     let video = document.getElementById("video:" + id);
     video.volume = evt.target.value;
   };
 
   toggleMute = (id) => {
+    console.log("toggleMute:", id);
     let video = document.getElementById("video:" + id);
     let muteImage = document.getElementById("mute:" + id);
+    if (!muteImage) {
+      return;
+    }
     if (video.muted) {
       video.muted = false;
       muteImage.src = "/Pictures/volume_up.svg";
