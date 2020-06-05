@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import io from "socket.io-client";
 import { connect } from "react-redux";
 
-const socket = io.connect("http://localhost:4001");
+// const socket = io.connect("http://localhost:4002");
+const socket = io.connect("http://localhost:4000");
 let backgroundColor = false;
 let intervalPopUp = false;
 

@@ -4,7 +4,8 @@ import Peer from "simple-peer";
 import io from "socket.io-client";
 import createVideoControls from "./videoControls.js";
 
-const socket = io.connect("http://localhost:4002");
+// const socket = io.connect("http://localhost:4002");
+const socket = io.connect("http://localhost:4000");
 
 // let myStream = undefined;
 

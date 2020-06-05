@@ -5,7 +5,7 @@ let multer = require("multer");
 let uploads = multer({
   dest: __dirname + "/uploads",
 });
-
+const { PORT = 4000, LOCAL_ADDRESS = "0.0.0.0" } = process.env;
 reloadMagic(app);
 
 app.use("/", express.static("build")); // Needed for the HTML and JS files
@@ -13,12 +13,12 @@ app.use("/", express.static("public")); // Needed for local assets
 let users = [];
 let chat = [];
 
-const server = require("http").createServer(app);
-server.listen(4001);
-const io = require("socket.io")(server);
+// const server = require("http").createServer(app);
+// server.listen(4001);
+// const io = require("socket.io")(server);
 
 const server2 = require("http").createServer(app);
-server2.listen(4002);
+// server2.listen(4002);
 const io2 = require("socket.io")(server2);
 
 ////websocket endpoints
@@ -27,18 +27,9 @@ const io2 = require("socket.io")(server2);
 //   console.log("Hello world websocket");
 // });
 
-io.on("connection", (socket) => {
-  socket.on("chatMounted", () => {
-    socket.emit("chatResponse", { chat: chat, status: "connection" });
-  });
-
-  socket.on("message", (data) => {
-    chat.push(data);
-    io.emit("chatResponse", { chat: chat, status: "messageReceived" });
-  });
-});
-
 io2.on("connection", (socket) => {
+  console.log("web socket connection");
+
   socket.on("yourID+name", (data) => {
     // let indexUsers = users.findIndex((user) => user.name === data.name);
     let newUser = {
@@ -49,6 +40,16 @@ io2.on("connection", (socket) => {
     };
     users.push(newUser);
     socket.emit("personInTheRoom", users);
+  });
+
+  socket.on("chatMounted", () => {
+    console.log("chatMounted");
+    socket.emit("chatResponse", { chat: chat, status: "connection" });
+  });
+
+  socket.on("message", (data) => {
+    chat.push(data);
+    io.emit("chatResponse", { chat: chat, status: "messageReceived" });
   });
 
   socket.on("disconnect", () => {
@@ -146,7 +147,6 @@ app.all("/*", (req, res, next) => {
   res.sendFile(__dirname + "/build/index.html");
 });
 
-const { PORT = 4000, LOCAL_ADDRESS = "0.0.0.0" } = process.env;
 app.listen(PORT, LOCAL_ADDRESS, () => {
   console.log("Server running on port" + PORT);
 });

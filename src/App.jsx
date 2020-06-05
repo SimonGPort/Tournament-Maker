@@ -4,6 +4,9 @@ import Navbar from "./Navbar.jsx";
 import MainPage from "./MainPage.jsx";
 import UserAlert from "./UserAlert.jsx";
 import { connect } from "react-redux";
+import io from "socket.io-client";
+
+const socket = io.connect("http://localhost:4000");
 
 class App extends Component {
   constructor() {
@@ -11,6 +14,12 @@ class App extends Component {
     this.state = {
       userAlertDone: false,
     };
+  }
+
+  componentDidMount() {
+    console.log("trying in chat Mounted");
+    socket.emit("chatMounted");
+    console.log("trying in chat Mounted after");
   }
 
   async componentWillUnmount() {
